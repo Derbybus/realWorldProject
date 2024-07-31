@@ -2,10 +2,13 @@ package com.accede.realWorld.service;
 
 
 import com.accede.realWorld.dto.AuthenticationRequest;
+import com.accede.realWorld.dto.AuthenticationResponse;
 import com.accede.realWorld.dto.RegisterDto;
 import com.accede.realWorld.dto.UserDTO;
 import com.accede.realWorld.entity.Users;
 import com.accede.realWorld.exceptions.EmailNotFoundException;
+import com.accede.realWorld.exceptions.IdNotFoundException;
+import com.accede.realWorld.exceptions.UserNotFoundException;
 import com.accede.realWorld.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +21,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 
 
 @Service
@@ -43,7 +47,7 @@ public class UserService {
 
     }
 
-    //Method to login a user. It checks if the user is already in the system
+    //Method to log in a user. It checks if the user is already in the system before it logs the user in
     public Users authenticate(AuthenticationRequest input) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -57,45 +61,15 @@ public class UserService {
 
 
 
-    //It gets details of the current authenticated user logged into the system
-//    public Users getCurrentUser() {
-//        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-//        String username;
-//        if (principal instanceof UserDetails) {
-//            username = ((UserDetails) principal).getUsername();
-//        } else {
-//            username = principal.toString();
-//        }
-//        return userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
-//        // Implement logic to get the currently authenticated user
-//        // This is a placeholder and should be replaced with actual authentication logic
-////        return userRepository.findByUsername("currentUsername").orElseThrow(() -> new RuntimeException("User not found"));
-//    }
-
-
-    public UserDTO getCurrentUser() {
+    //Method to get details of the current authenticated user logged into the system
+    public Users getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("Current Authentication: " + authentication); // Debug log
-
-        if (authentication != null && authentication.isAuthenticated() &&
-                !(authentication.getPrincipal() instanceof String && authentication.getPrincipal().equals("anonymousUser"))) {
-            Object principal = authentication.getPrincipal();
-            System.out.println("Principal: " + principal); // Debug log
-
-            if (principal instanceof Users) {
-                Users user = (Users) principal;
-                return new UserDTO(user);
-            }
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            String username = ((UserDetails) authentication.getPrincipal()).getUsername();
+            return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User not found"));
         }
         return null;
     }
-
-
-
-
-    //Method to get the profile of the user
-
-
 
 
     //Updates details of an existing user
@@ -117,40 +91,18 @@ public class UserService {
                 user.setImage(users.getImage());
             }
             return userRepository.save(user);
-        }).orElseThrow();
+        }).orElseThrow(()-> new IdNotFoundException("User id not found"));
     }
 
 
 
-
-    /*
-      public Long getAuthenticatedUserId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
-        return userPrincipal.getId(); // Assuming UserPrincipal has a getId() method
-    }
-
-     */
-
-
-
-    //Gets profile of the user
-    public Users getUserByUsername(String username) {
+    //Finds the username to get the profile of the user
+    public Optional<Users> getUserByUsername(String username) {
         return userRepository.findByUsername(username)
                 .stream()
                 .filter(users -> users.getUsername().equals(username))
-                .findAny()
-                .orElseThrow();
+                .findAny();
     }
-
-
-    /*
-     public ResponseEntity<ProfileDTO> getProfile(@PathVariable String username) {
-        return userService.getUserByUsername(username)
-                .map(user -> ResponseEntity.ok(new ProfileDTO(user, followService.isFollowing(currentUser, user))))
-                .orElse(ResponseEntity.notFound().build());
-    }
-     */
 
 
 }

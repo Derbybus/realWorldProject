@@ -94,4 +94,13 @@ public class GlobalException extends ResponseEntityExceptionHandler {
         ApiError errors = new ApiError(message, details, HttpStatus.NOT_FOUND,  LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    protected ResponseEntity<Object> handleEmailException(UserNotFoundException ex){
+        String message = ex.getMessage();
+        List<String> details = new ArrayList<>();
+        details.add("Username not found");
+        ApiError errors = new ApiError(message, details, HttpStatus.NOT_FOUND,  LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errors);
+    }
 }

@@ -27,6 +27,8 @@ public class CommentService {
     private ArticleRepository articleRepository;
 
 
+
+    //Add a comment to an article
     public Comments addComment(String username, String slug, String body) {
         Users author = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -42,13 +44,15 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
+
+    //Gets the list of comments under an article
     public List<Comments> getComments(String slug) {
         return commentRepository.findByArticleSlug(slug);
     }
 
 
 
-    //Delete comment
+    //Deletes a comment
     public void deleteComment(String slug, Long id) {
         // Ensure the article exists and the comment belongs to it
         Article article = articleRepository.findBySlug(slug)
