@@ -76,7 +76,7 @@ public class ArticleController {
 
 
     //api to return articles created by followed users
-    @GetMapping("/api/articles/feed")
+    @GetMapping("/articles/feed")
     public ResponseEntity<List<ArticleDTO>> getFeedArticles(
             @RequestParam(defaultValue = "20") int limit,
             @RequestParam(defaultValue = "0") int offset,
@@ -130,7 +130,7 @@ public class ArticleController {
 
 
     //api to delete a comment
-    @DeleteMapping("/api/articles/{slug}/comments/{id}")
+    @DeleteMapping("/articles/{slug}/comments/{id}")
     public ResponseEntity<Void> deleteComment(@PathVariable String slug, @PathVariable Long id) {
         commentService.deleteComment(slug, id);
         return ResponseEntity.noContent().build();
